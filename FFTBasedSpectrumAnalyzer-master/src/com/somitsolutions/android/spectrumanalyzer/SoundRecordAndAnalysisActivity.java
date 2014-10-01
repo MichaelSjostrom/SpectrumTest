@@ -33,6 +33,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 	int frequency = 8000;
     int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+    
+    double maxFreq=0.0;
 
     AudioRecord audioRecord;
     private RealDoubleFFT transformer;
@@ -101,6 +103,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     int bufferReadResult;
                     short[] buffer = new short[blockSize];
                     double[] toTransform = new double[blockSize];
+                    
                     try{
                     	audioRecord.startRecording();
                     }
@@ -121,14 +124,43 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 
                     for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
                         toTransform[i] = (double) buffer[i] / 32768.0; // signed 16 bit
+                        //Log.i("tag", "toTransform[i] = " + toTransform[i]);
                         }
+                    
 
                     transformer.ft(toTransform);
-                    /*if(width > 512){
+                    
+                    for (int i = 0; i < blockSize && i < bufferReadResult; i++){
                     	
-                    	publishProgress(toTransform);
+                    	//Log.i("tag", "toTransform[i] = " + toTransform[i]*32768);
+                    	if(toTransform[i]>maxFreq){
+                    		maxFreq = toTransform[i];
+                    		Log.i("tag", "maxFreq = " + (maxFreq*8000)/256);
+                    	}
+                    	
+                    }
+                    
+                    
+                    
+                    //Log.i("tag", "maxFreq = " + maxFreq);
+                    
+                    /*for (int i = 0; i < blockSize && i < bufferReadResult; i++){
+                    	
+                    	if (toTransform[i]==maxFreq){
+                        	//maxFreq = toTransform[i];
+                        	Log.i("tag", "i" + i);
+                        	
+                        	maxFreq = (3000*i)/256;
+                        	
+                        	break;
+                        	
+                        }
                     }*/
+                    
+                    //Log.i("tag", "Max frekvens: " + maxFreq);
+                    
                     publishProgress(toTransform);
+                    
                     if(isCancelled())
                     	break;
                     	//return null;
@@ -157,6 +189,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     }
                     
                     imageViewDisplaySectrum.invalidate();
+                    
                }
         	
         	else{
@@ -199,9 +232,10 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         started = false;
         startStopButton.setText("Start");
         recordTask.cancel(true);
-        //recordTask = null;
+        
         canvasDisplaySpectrum.drawColor(Color.BLACK);
-        } else {
+        } 
+        else {
         started = true;
         startStopButton.setText("Stop");
         recordTask = new RecordAudio();
