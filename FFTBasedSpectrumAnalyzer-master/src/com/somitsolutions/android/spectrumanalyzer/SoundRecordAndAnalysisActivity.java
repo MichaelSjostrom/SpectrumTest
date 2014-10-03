@@ -130,10 +130,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
             while (started) {
             	
-            	/*if(width > 512){
-            		bufferReadResult = audioRecord.read(buffer, 0, 512);
-            	}
-            	else{*/
+           
             		bufferReadResult = audioRecord.read(buffer, 0, blockSize);
             	//}
             	if(isCancelled())
@@ -141,49 +138,11 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 
             for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
                 
-            	toTransform[i] = (double) buffer[i] / 32768.0; // signed 16 bit
-           // 	Log.i("hhhh", "buffer innan " + buffer[i]+ "\ntransf efter " + toTransform[i]);
-                
+            	toTransform[i] = (double) buffer[i] / 32768.0; // signed 16 bit                
             }
             
 
             transformer.ft(toTransform);
-            
-           // Log.i("hhhh", "LŠngd innan " + toTransform2.length + "\nLŠngd efter " + toTransform.length);
-            
-            /*for (int i = 0; i < toTransform.length; i++){
-            	Log.i("tag", "toTransform[i] = " + toTransform[i]);
-            }*/
-            
-            /*
-            for (int i = 0; i < blockSize && i < bufferReadResult; i++){
-            	
-            	//Log.i("tag", "toTransform[i] = " + toTransform[i]*32768);
-            	if(toTransform[i]>maxFreq){
-            		maxFreq = toTransform[i];
-            		Log.i("tag", "maxFreq = " + (maxFreq*8000)/256);
-            	}
-            	
-            }*/
-            
-            
-            
-            //Log.i("tag", "maxFreq = " + maxFreq);
-            
-            /*for (int i = 0; i < blockSize && i < bufferReadResult; i++){
-            	
-            	if (toTransform[i]==maxFreq){
-                	//maxFreq = toTransform[i];
-                	Log.i("tag", "i" + i);
-                	
-                	maxFreq = (3000*i)/256;
-                	
-                	break;
-                	
-                }
-            }*/
-            
-            //Log.i("tag", "Max frekvens: " + maxFreq);
             
             publishProgress(toTransform);
             
