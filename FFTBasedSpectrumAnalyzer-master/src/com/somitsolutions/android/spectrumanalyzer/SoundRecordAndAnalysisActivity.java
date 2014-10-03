@@ -89,8 +89,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		freqText.setTextColor(0xffff7700);
     		
     }
-    
-    //Hejsansass
+ 
     
     @Override
 	public void onWindowFocusChanged (boolean hasFocus) {
@@ -239,15 +238,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     public void onClick(View v) {
     	if(v == startStopButton) {
 	        if (started == true) {
-	        	Log.i("log", "started=true");
 		        started = false;
 		        startStopButton.setText("Start");
 		        recordTask.cancel(true);
 		        
 		        audioRecord.release();
-		        
-		        
-		        
+
 		        canvasDisplaySpectrum.drawColor(Color.BLACK);
 	        } 
 	        else {
@@ -274,11 +270,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         
         public void onStop(){
         	super.onStop();
-        	/*started = false;
-            startStopButton.setText("Start");*/
-            //if(recordTask != null){
-            	recordTask.cancel(true); 
-            //}
+        	
+        	recordTask.cancel(true); 
+
             Intent intent = new Intent(Intent.ACTION_MAIN);
         	intent.addCategory(Intent.CATEGORY_HOME);
         	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
