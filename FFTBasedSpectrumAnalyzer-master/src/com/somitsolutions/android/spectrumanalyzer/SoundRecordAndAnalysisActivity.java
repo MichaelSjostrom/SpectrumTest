@@ -90,6 +90,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		
     }
     
+    //Hejsansass
+    
     @Override
 	public void onWindowFocusChanged (boolean hasFocus) {
     	//left_Of_BimapScale = main.getC.getLeft();
@@ -202,7 +204,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         }
         
         protected void onProgressUpdate(double[]... toTransform) {
-        	Log.e("RecordingProgress", "Displaying in progress");
+        	//Log.e("RecordingProgress", "Displaying in progress");
         	
         	//double baseFrequency = calcBaseFrequency(toTransform);
         	//Log.i("damn", "BaseFrequency = " + baseFrequency + " Hz\nSlots in frequency-spectra: " + toTransform[0].length);
@@ -273,24 +275,34 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     public void onClick(View v) {
     	if(v == startStopButton) {
 	        if (started == true) {
+	        	Log.i("log", "started=true");
 		        started = false;
 		        startStopButton.setText("Start");
 		        recordTask.cancel(true);
 		        
+		        audioRecord.release();
+		        
+		        
+		        
 		        canvasDisplaySpectrum.drawColor(Color.BLACK);
 	        } 
 	        else {
+	        	Log.i("log", "started=false");
+
 		        started = true;
 		        startStopButton.setText("Stop");
 		        recordTask = new RecordAudio();
 		        recordTask.execute();
 		        newSpectra = new double[blockSize];
                 maxAmp2 = new double[2];
+                
                 freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
 	        }  
     	}
         
      }
+    
+    
         
         static SoundRecordAndAnalysisActivity getMainActivity(){
         	return mainActivity;
@@ -452,6 +464,10 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	intent.addCategory(Intent.CATEGORY_HOME);
         	intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         	startActivity(intent);
+        	
+        	//audioRecord.release();
+        	
+        	
         }
         //Custom Imageview Class
         public class MyImageView extends ImageView {
