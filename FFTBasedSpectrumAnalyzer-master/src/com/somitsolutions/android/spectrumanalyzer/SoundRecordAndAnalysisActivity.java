@@ -33,7 +33,7 @@ import ca.uol.aig.fftpack.RealDoubleFFT;
 
 public class SoundRecordAndAnalysisActivity extends Activity implements OnClickListener{
 	
-	int frequency = 16000;//8000;//44100;
+	int frequency = 2*8000;//16000;//8000;//44100;
     int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
     
@@ -143,6 +143,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             
 
             transformer.ft(toTransform);
+
+          
+
             
             publishProgress(toTransform);
             
@@ -578,6 +581,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			//Log.i("damn", "Highest after : " + baseFreq);
 			double step = (double) frequency / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
+			Log.i("freq", "amplitude : " + maxAmp2[1]*step);
 			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: "+ maxAmp2[1]*step+" Hz");
 			return (double) baseFreq * step;
 	    
