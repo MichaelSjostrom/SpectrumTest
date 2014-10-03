@@ -284,6 +284,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        startStopButton.setText("Stop");
 		        recordTask = new RecordAudio();
 		        recordTask.execute();
+		        newSpectra = new double[blockSize];
+                maxAmp2 = new double[2];
+                freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
 	        }  
     	}
         
@@ -618,7 +621,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             OnClickListener clicker = new OnClickListener() {
                 public void onClick(View v) {
                     newSpectra = new double[blockSize];
-                    freqText.setText("Base frequency = 0 Hz");
+                    maxAmp2 = new double[2];
+                    freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
                 }
             };
 
