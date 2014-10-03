@@ -90,6 +90,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		
     }
     
+    //Hejsansass
+    
     @Override
 	public void onWindowFocusChanged (boolean hasFocus) {
     	//left_Of_BimapScale = main.getC.getLeft();
