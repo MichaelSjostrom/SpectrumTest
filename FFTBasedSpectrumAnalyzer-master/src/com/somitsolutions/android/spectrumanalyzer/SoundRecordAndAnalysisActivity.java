@@ -129,10 +129,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
             while (started) {
             	
-            	/*if(width > 512){
-            		bufferReadResult = audioRecord.read(buffer, 0, 512);
-            	}
-            	else{*/
+           
             		bufferReadResult = audioRecord.read(buffer, 0, blockSize);
             	//}
             	if(isCancelled())
@@ -140,13 +137,14 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 
             for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
                 
-            	toTransform[i] = (double) buffer[i] / 32768.0; // signed 16 bit
-           // 	Log.i("hhhh", "buffer innan " + buffer[i]+ "\ntransf efter " + toTransform[i]);
-                
+            	toTransform[i] = (double) buffer[i] / 32768.0; // signed 16 bit                
             }
             
 
+            transformer.ft(toTransform);
+
           
+
             
             publishProgress(toTransform);
             
