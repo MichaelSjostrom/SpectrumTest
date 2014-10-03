@@ -207,19 +207,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	//double baseFrequency = calcBaseFrequency(toTransform);
         	//Log.i("damn", "BaseFrequency = " + baseFrequency + " Hz\nSlots in frequency-spectra: " + toTransform[0].length);
         	
-        	
-        	if (width > 512){
-        		for (int i = 0; i < toTransform[0].length; i++) {
-                    int x = 2*i;
-                    int downy = (int) (150 - (toTransform[0][i] * 10));
-                    int upy = 150;
-                    canvasDisplaySpectrum.drawLine(x, downy, x, upy, paintSpectrumDisplay);
-                    }
-                    
-                    imageViewDisplaySectrum.invalidate();
-                    
-            }
-        	else if (width == 480) {
+        	if (width >= 480) {
         		//double maxAmp =0;
         		int upy = 300;
         		
@@ -236,6 +224,17 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         		calcBaseFrequency(toTransform);    
                 imageViewDisplaySectrum.invalidate();
         	}
+        	else if (width > 512){
+        		for (int i = 0; i < toTransform[0].length; i++) {
+                    int x = 2*i;
+                    int downy = (int) (150 - (toTransform[0][i] * 10));
+                    int upy = 150;
+                    canvasDisplaySpectrum.drawLine(x, downy, x, upy, paintSpectrumDisplay);
+                    }
+                    
+                    imageViewDisplaySectrum.invalidate();
+                    
+            }
         	
         	else{
         		for (int i = 0; i < toTransform[0].length; i++) {
@@ -328,12 +327,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	transformer = new RealDoubleFFT(blockSize);
             
             imageViewDisplaySectrum = new ImageView(this);
-            if(width > 512){
-            	bitmapDisplaySpectrum = Bitmap.createBitmap((int)512,(int)300,Bitmap.Config.ARGB_8888);
-            }
-            else if(width == 480){
+            if(width >= 480){
             	bitmapDisplaySpectrum = Bitmap.createBitmap((int)480,(int)300,Bitmap.Config.ARGB_8888);
             }
+            else if(width > 512){
+            	bitmapDisplaySpectrum = Bitmap.createBitmap((int)512,(int)300,Bitmap.Config.ARGB_8888);
+            } 
             else{
             	 bitmapDisplaySpectrum = Bitmap.createBitmap((int)256,(int)150,Bitmap.Config.ARGB_8888);
             }
@@ -344,17 +343,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             paintSpectrumDisplay = new Paint();
             paintSpectrumDisplay.setColor(Color.YELLOW);
             imageViewDisplaySectrum.setImageBitmap(bitmapDisplaySpectrum);
-            if(width >512){
-            	//imageViewDisplaySectrum.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
-            	LinearLayout.LayoutParams layoutParams_imageViewDisplaySpectrum=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                ((MarginLayoutParams) layoutParams_imageViewDisplaySpectrum).setMargins(100, 600, 0, 0);
-                imageViewDisplaySectrum.setLayoutParams(layoutParams_imageViewDisplaySpectrum);
-                layoutParams_imageViewScale= new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                //layoutParams_imageViewScale.gravity = Gravity.CENTER_HORIZONTAL;
-                ((MarginLayoutParams) layoutParams_imageViewScale).setMargins(100, 20, 0, 0);
-                
-            }
-            else if ((width== 480)){
+           
+            if ((width >= 480)){
             	LinearLayout.LayoutParams layoutParams_imageViewDisplaySpectrum=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 ((MarginLayoutParams) layoutParams_imageViewDisplaySpectrum).setMargins(0, 20, 0, 0);
                //layoutParams_imageViewDisplaySpectrum.gravity = Gravity.CENTER_HORIZONTAL;
@@ -365,7 +355,17 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             	((MarginLayoutParams) layoutParams_imageViewScale).setMargins(0, 20, 0, 100);
             	//layoutParams_imageViewScale.gravity = Gravity.CENTER_HORIZONTAL;
             }
-            
+            else if(width >512){
+            	//imageViewDisplaySectrum.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
+            	LinearLayout.LayoutParams layoutParams_imageViewDisplaySpectrum=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                ((MarginLayoutParams) layoutParams_imageViewDisplaySpectrum).setMargins(100, 600, 0, 0);
+                imageViewDisplaySectrum.setLayoutParams(layoutParams_imageViewDisplaySpectrum);
+                layoutParams_imageViewScale= new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                //layoutParams_imageViewScale.gravity = Gravity.CENTER_HORIZONTAL;
+                ((MarginLayoutParams) layoutParams_imageViewScale).setMargins(100, 20, 0, 0);
+                
+            }
+                       
             else if ((width >320) && (width<512)){
             	LinearLayout.LayoutParams layoutParams_imageViewDisplaySpectrum=new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 ((MarginLayoutParams) layoutParams_imageViewDisplaySpectrum).setMargins(60, 250, 0, 0);
@@ -459,12 +459,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	public MyImageView(Context context) {
         		super(context);
         		// TODO Auto-generated constructor stub
-        		if(width >512){
-        			bitmapScale = Bitmap.createBitmap((int)512,(int)50,Bitmap.Config.ARGB_8888);
-                }
-        		else if(width == 480){
+        		if(width >= 480){
         			bitmapScale =  Bitmap.createBitmap((int)480,(int)50,Bitmap.Config.ARGB_8888);
         		}
+        		else if(width >512){
+        			bitmapScale = Bitmap.createBitmap((int)512,(int)50,Bitmap.Config.ARGB_8888);
+                }
         		else{
         			bitmapScale =  Bitmap.createBitmap((int)256,(int)50,Bitmap.Config.ARGB_8888);
         		}
@@ -488,7 +488,26 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 
                // int x_Of_BimapScale = bitmapScale.
                
-                if(width > 512){
+                if (width >= 480){
+                  	 canvasScale.drawLine(0, 30, 0 + 480, 30, paintScaleDisplay);
+                  	 int stepOf1000 = (int) 480/(frequency/2000);
+                  	 Log.i("step of 1000", "stepOf1000 = " + stepOf1000);
+                  	 int count = 0;
+                  	 for(int i = 0,j = 0; i<480; i=i+stepOf1000, j++){
+                       	for (int k = i; k<i+(stepOf1000); k=k+(stepOf1000/9)){
+                       		if(count % 5 == 0)
+                       			canvasScale.drawLine(k, 32, k, 23, paintScaleDisplay);
+                       		else
+                       			canvasScale.drawLine(k, 30, k, 25, paintScaleDisplay);
+                       		count++;
+                       	}
+                       	canvasScale.drawLine(i, 40, i, 25, paintScaleDisplay);
+                       	String text = Integer.toString(j) + "KHz";
+                       	canvasScale.drawText(text, i, 45, paintScaleDisplay);
+                       }
+                  	 canvas.drawBitmap(bitmapScale, 0, 0, paintScaleDisplay);
+                  }
+                else if(width > 512){
                 	 canvasScale.drawLine(0, 30,  512, 30, paintScaleDisplay);
                 	for(int i = 0,j = 0; i< 512; i=i+128, j++){
                      	for (int k = i; k<(i+128); k=k+16){
@@ -500,26 +519,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                      }
                 	canvas.drawBitmap(bitmapScale, 0, 0, paintScaleDisplay);
                 }
-                else if (width==480){
-               	 canvasScale.drawLine(0, 30, 0 + 480, 30, paintScaleDisplay);
-               	 int stepOf1000 = (int) 480/(frequency/2000);
-               	 Log.i("step of 1000", "stepOf1000 = " + stepOf1000);
-               	 int count = 0;
-               	 for(int i = 0,j = 0; i<480; i=i+stepOf1000, j++){
-                    	for (int k = i; k<i+(stepOf1000); k=k+(stepOf1000/9)){
-                    		if(count % 5 == 0)
-                    			canvasScale.drawLine(k, 32, k, 23, paintScaleDisplay);
-                    		else
-                    			canvasScale.drawLine(k, 30, k, 25, paintScaleDisplay);
-                    		count++;
-                    	}
-                    	canvasScale.drawLine(i, 40, i, 25, paintScaleDisplay);
-                    	String text = Integer.toString(j) + "KHz";
-                    	canvasScale.drawText(text, i, 45, paintScaleDisplay);
-                    }
-               	 canvas.drawBitmap(bitmapScale, 0, 0, paintScaleDisplay);
-               }
-              
+                              
                 else if ((width >320) && (width<512)){
                 	 canvasScale.drawLine(0, 30, 0 + 256, 30, paintScaleDisplay);
                 	 for(int i = 0,j = 0; i<256; i=i+64, j++){
