@@ -629,4 +629,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
         }
 }
+
+//kommentarer 
     
