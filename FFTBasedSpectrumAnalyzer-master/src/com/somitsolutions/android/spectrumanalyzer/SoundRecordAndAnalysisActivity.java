@@ -1,5 +1,7 @@
 package com.somitsolutions.android.spectrumanalyzer;
 
+import java.util.Random;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -78,15 +80,19 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     double[] newSpectra;
     
 	//FÖR ATT GENERERA TONER MED VISSA FREKVENSER SAMT LITE LAYOUT - RICKARD
+    FreqView generatedTone;
+    
+    int minFreqGen = 500;
+    int maxFreqGen = 2500;
+    
 	Button genToneButton;
 	private final int duration = 4;
 	private final int numSamples = duration * sampleRate;
 	
 	private final double sample[] = new double[numSamples];
-    private double freqOfTone = 1000; //HZ
+    private double freqOfTone; //HZ
 	
     private final byte generatedSnd[] = new byte[2 * numSamples];
-	
 	//
     
     
@@ -110,6 +116,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		freqText = new FreqView(this);
     		freqText.setTextColor(0xffff7700);
     		
+    		generatedTone = new FreqView(this);
+    		generatedTone.setTextColor(0xffff7700);
     }
  
     
@@ -286,11 +294,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 	        }  
     	}
     	else if(v == genToneButton){
-    		
+    		genFreq();
     		genTone();
     		playSound();
+    		
+    		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
     	}
-        
      }
     
     
@@ -323,6 +332,11 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             
         	newSpectra = new double[blockSize];
         	main.addView(freqText,
+                    new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        0));
+        	main.addView(generatedTone,
                     new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -440,7 +454,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             ll2.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
             ll2.setOrientation(LinearLayout.HORIZONTAL);
             ll2.addView(genToneButton);
-            
+                   
             main.addView(ll2);
             
             setContentView(main);
@@ -671,6 +685,17 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		audioTrack.write(generatedSnd, 0, generatedSnd.length);
     		audioTrack.play();
         	
+        }
+        
+        private void genFreq(){
+        	boolean Kalle = true;
+        	while(Kalle){
+        		Random r = new Random();
+        		freqOfTone = r.nextInt(maxFreqGen - minFreqGen + 1) + minFreqGen;
+        		if(freqOfTone % 100 == 0){
+        			Kalle = false;
+        		}
+        	}        	
         }
         
         private void genTone(){
