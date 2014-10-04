@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
 //import android.graphics.drawable.ShapeDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -60,6 +62,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
     Paint paintSpectrumDisplay;
     Paint paintScaleDisplay;
+    //making the "paintSpectrumDisplay" fade
+    Paint fadePaint;
+    
     static SoundRecordAndAnalysisActivity mainActivity;
     LinearLayout main;
     int width;
@@ -188,6 +193,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	//Log.i("damn", "BaseFrequency = " + baseFrequency + " Hz\nSlots in frequency-spectra: " + toTransform[0].length);
         	
         	if (width >= 480) {
+        		
+        		
         		//double maxAmp =0;
         		int upy = 300;
         		
@@ -199,12 +206,17 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     	maxAmp2[1] = i;
                     }
                     canvasDisplaySpectrum.drawLine(i, downy, i, upy, paintSpectrumDisplay);
+                    
+                    
                 }
         		//Log.i("maxAmp","maxAmp in freq. spec. : " + maxAmp+"\nNo. of frequency slots: " + toTransform[0].length);
+        		
         		calcBaseFrequency(toTransform);    
-                imageViewDisplaySectrum.invalidate();
+        		canvasDisplaySpectrum.drawPaint(fadePaint);
+        		imageViewDisplaySectrum.invalidate();
         	}
         	else if (width > 512){
+        		
         		for (int i = 0; i < toTransform[0].length; i++) {
                     int x = 2*i;
                     int downy = (int) (150 - (toTransform[0][i] * 10));
@@ -217,6 +229,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
         	
         	else{
+        		
         		for (int i = 0; i < toTransform[0].length; i++) {
         			int x = i;
                     int downy = (int) (150 - (toTransform[0][i] * 10));
@@ -332,7 +345,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             canvasDisplaySpectrum = new Canvas(bitmapDisplaySpectrum);
             //canvasDisplaySpectrum = new Canvas(scaled);
             paintSpectrumDisplay = new Paint();
+            fadePaint = new Paint();
+            
             paintSpectrumDisplay.setColor(Color.YELLOW);
+            fadePaint.setColor(Color.argb(220, 255, 255, 255));//Adjust alpha(first position) to change how quickly the image fades
+            fadePaint.setXfermode(new PorterDuffXfermode(Mode.MULTIPLY));
+            
             imageViewDisplaySectrum.setImageBitmap(bitmapDisplaySpectrum);
            
             if ((width >= 480)){
@@ -490,13 +508,13 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 
                 
         	}
+        	
         	@Override
             protected void onDraw(Canvas canvas)
             {
                 // TODO Auto-generated method stub
                 super.onDraw(canvas);
-                
-               // int x_Of_BimapScale = bitmapScale.
+  
                
                 if (width >= 480){
                   	 canvasScale.drawLine(0, 30, 0 + 480, 30, paintScaleDisplay);
@@ -515,6 +533,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                        	String text = Integer.toString(j) + "KHz";
                        	canvasScale.drawText(text, i, 45, paintScaleDisplay);
                        }
+                  	 
+                  	
+                  	 
                   	 canvas.drawBitmap(bitmapScale, 0, 0, paintScaleDisplay);
                   }
                 else if(width > 512){
