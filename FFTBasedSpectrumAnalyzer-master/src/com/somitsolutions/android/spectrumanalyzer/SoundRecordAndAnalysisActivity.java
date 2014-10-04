@@ -205,7 +205,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         		
         		//double maxAmp =0;
         		int upy = 300;
-        		
+        		maxAmp2 = new double[2];
         		for (int i = 0; i < toTransform[0].length; i++) {
                     int downy = (int) (upy - Math.abs(toTransform[0][i] * 5));
                     
@@ -645,8 +645,14 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			//Log.i("damn", "Highest after : " + baseFreq);
 			double step = (double) sampleRate / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
-			Log.i("freq", "amplitude : " + maxAmp2[1]);
-			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: "+ maxAmp2[1]*step+" Hz");
+			//Log.i("freq", "amplitude : " + maxAmp2[1]);
+			//String bb = String.format("%.2f", maxAmp2[1]*step);
+			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: " + (int)(maxAmp2[1]*step) +" Hz");
+			
+			//Log.i("log", "maxAmp2[1] = " + maxAmp2[0]);
+			
+			
+			
 			return (double) baseFreq * step;
 	    
         }
