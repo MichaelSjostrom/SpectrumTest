@@ -10,7 +10,9 @@ import android.graphics.Color;
 import android.graphics.Paint;
 //import android.graphics.drawable.ShapeDrawable;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,8 +34,9 @@ import ca.uol.aig.fftpack.RealDoubleFFT;
 
 
 public class SoundRecordAndAnalysisActivity extends Activity implements OnClickListener{
+
 	
-	int frequency = 2*8000;//16000;//8000;//44100;
+	int sampleRate = 2*8000;//16000;//8000;//44100;
     int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
     
@@ -68,6 +71,20 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
     FreqView freqText =null;
     double[] newSpectra;
+    
+	//FÖR ATT GENERERA TONER MED VISSA FREKVENSER SAMT LITE LAYOUT - RICKARD
+	Button genToneButton;
+	private final int duration = 4;
+	private final int numSamples = duration * sampleRate;
+	
+	private final double sample[] = new double[numSamples];
+    private double freqOfTone = 1000; //HZ
+	
+    private final byte generatedSnd[] = new byte[2 * numSamples];
+	
+	//
+    
+    
     
     /** Called when the activity is first created. */
     @Override
@@ -108,10 +125,10 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         		return null;
         	}
         //try {
-            int bufferSize = AudioRecord.getMinBufferSize(frequency,
+            int bufferSize = AudioRecord.getMinBufferSize(sampleRate,
                     channelConfiguration, audioEncoding);
             audioRecord = new AudioRecord(
-                    MediaRecorder.AudioSource.DEFAULT, frequency,
+                    MediaRecorder.AudioSource.DEFAULT, sampleRate,
                     	channelConfiguration, audioEncoding, bufferSize);
             Log.e("RecordingProgress", "Could probably not access the mic");
                     
@@ -239,23 +256,26 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        started = false;
 		        startStopButton.setText("Start");
 		        recordTask.cancel(true);
-		        
 		        audioRecord.release();
 
-		        canvasDisplaySpectrum.drawColor(Color.BLACK);
+		        
 	        } 
 	        else {
 	        	Log.i("log", "started=false");
-
+	        	canvasDisplaySpectrum.drawColor(Color.BLACK);
 		        started = true;
 		        startStopButton.setText("Stop");
 		        recordTask = new RecordAudio();
 		        recordTask.execute();
 		        newSpectra = new double[blockSize];
                 maxAmp2 = new double[2];
-                
                 freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
 	        }  
+    	}
+    	else if(v == genToneButton){
+    		
+    		genTone();
+    		playSound();
     	}
         
      }
@@ -370,6 +390,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             //imageViewScale.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT));
             main.addView(imageViewScale);
             
+            
             startStopButton = new Button(this);
             startStopButton.setText("Start");
             startStopButton.setOnClickListener(this);
@@ -386,10 +407,24 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	ll.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
         	ll.setOrientation(LinearLayout.HORIZONTAL);
             ll.addView(startStopButton);
+            //ll.addView(genToneButton);
         	//ll.setLayoutParams(dividerDrawable(new ShapeDivider()));
             //ll.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
             ll.addView(resetBaseFreqBtn);
             main.addView(ll);
+            
+            genToneButton = new Button(this);
+            genToneButton.setText("Play Random Freq");
+            genToneButton.setOnClickListener(this);
+            genToneButton.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
+            
+            LinearLayout ll2 = new LinearLayout(this);
+            ll2.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            ll2.setOrientation(LinearLayout.HORIZONTAL);
+            ll2.addView(genToneButton);
+            
+            main.addView(ll2);
+            
             setContentView(main);
             //recordTask = new RecordAudio();
             
@@ -465,7 +500,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                
                 if (width >= 480){
                   	 canvasScale.drawLine(0, 30, 0 + 480, 30, paintScaleDisplay);
-                  	 int stepOf1000 = (int) 480/(frequency/2000);
+                  	 int stepOf1000 = (int) 480/(sampleRate/2000);
                   	 Log.i("step of 1000", "stepOf1000 = " + stepOf1000);
                   	 int count = 0;
                   	 for(int i = 0,j = 0; i<480; i=i+stepOf1000, j++){
@@ -573,9 +608,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			}
 			
 			//Log.i("damn", "Highest after : " + baseFreq);
-			double step = (double) frequency / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
+			double step = (double) sampleRate / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
-			Log.i("freq", "amplitude : " + maxAmp2[1]*step);
+			Log.i("freq", "amplitude : " + maxAmp2[1]);
 			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: "+ maxAmp2[1]*step+" Hz");
 			return (double) baseFreq * step;
 	    
@@ -595,6 +630,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 public void onClick(View v) {
                     newSpectra = new double[blockSize];
                     maxAmp2 = new double[2];
+                    
                     freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
                 }
             };
@@ -605,6 +641,35 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 setOnClickListener(clicker);
             }
         }
+        
+        private void playSound(){
+        	
+    		final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
+    				AudioFormat.CHANNEL_OUT_MONO,
+        			AudioFormat.ENCODING_PCM_16BIT, numSamples, AudioTrack.MODE_STATIC);
+    		audioTrack.write(generatedSnd, 0, generatedSnd.length);
+    		audioTrack.play();
+        	
+        }
+        
+        private void genTone(){
+    		
+    		for(int i = 0; i < numSamples; i++){
+    			sample[i] = Math.sin(2 * Math.PI * i / (sampleRate/freqOfTone));
+    		}
+    		
+    		int idx = 0;
+    		for(final double dVal : sample){
+    			
+    			final short val = (short)((dVal * 32767));
+    			
+    			generatedSnd[idx++] = (byte) (val & 0x00ff);
+    			generatedSnd[idx++] = (byte) ((val & 0xff0) >>> 8);
+    			
+    		}
+    		
+    		
+    	}
 }
 
 //kommentarer 
