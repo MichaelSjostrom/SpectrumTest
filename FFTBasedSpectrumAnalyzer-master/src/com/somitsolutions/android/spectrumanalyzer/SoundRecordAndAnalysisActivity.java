@@ -84,6 +84,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
     int minFreqGen = 500;
     int maxFreqGen = 2500;
+    int nrOfPoints = 0;
     
 	Button genToneButton;
 	private final int duration = 4;
@@ -219,8 +220,11 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 }
         		//Log.i("maxAmp","maxAmp in freq. spec. : " + maxAmp+"\nNo. of frequency slots: " + toTransform[0].length);
         		
-        		calcBaseFrequency(toTransform);    
+        		calcBaseFrequency(toTransform);
+        		
+        		//Fade last amplitudes
         		canvasDisplaySpectrum.drawPaint(fadePaint);
+        		
         		imageViewDisplaySectrum.invalidate();
         	}
         	else if (width > 512){
@@ -247,6 +251,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     
                 imageViewDisplaySectrum.invalidate();
         	}
+        	
+        	//Log.i("log", "" + (int)(maxAmp2[1]*step))
                 
         }
         
@@ -290,7 +296,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        recordTask.execute();
 		        newSpectra = new double[blockSize];
                 maxAmp2 = new double[2];
-                freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
+                freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz\nPoints: ");
 	        }  
     	}
     	else if(v == genToneButton){
@@ -647,9 +653,17 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
 			//Log.i("freq", "amplitude : " + maxAmp2[1]);
 			//String bb = String.format("%.2f", maxAmp2[1]*step);
-			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: " + (int)(maxAmp2[1]*step) +" Hz");
+			freqText.setText("Base frequency = " + baseFreq*step +
+					" Hz\nTop amplitude at: " + (int)(maxAmp2[1]*step) +" Hz\nPoints: " + nrOfPoints);
 			
-			//Log.i("log", "maxAmp2[1] = " + maxAmp2[0]);
+			
+			//Använder "Top Amplitude" och lägger till 1 poäng om man är +/-50Hz ifrån
+			if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+				
+				nrOfPoints++;
+			}
+			
+			
 			
 			
 			
@@ -672,7 +686,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     newSpectra = new double[blockSize];
                     maxAmp2 = new double[2];
                     
-                    freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
+                    freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz\nPoints: ");
                 }
             };
 
