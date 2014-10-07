@@ -16,6 +16,12 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+<<<<<<< HEAD
+=======
+import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffXfermode;
+//import android.graphics.drawable.ShapeDrawable;
+>>>>>>> 088e7c05739c320fed9562aa7d4ca841b02419cf
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -72,6 +78,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
     Paint paintSpectrumDisplay;
     Paint paintScaleDisplay;
+    //making the "paintSpectrumDisplay" fade
+    Paint fadePaint;
+    
     static SoundRecordAndAnalysisActivity mainActivity;
     LinearLayout main;
     int width;
@@ -89,6 +98,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
     int minFreqGen = 500;
     int maxFreqGen = 2500;
+    int nrOfPoints = 0;
     
 	Button genToneButton;
 	private final int duration = 4;
@@ -212,9 +222,11 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         protected void onProgressUpdate(double[]... toTransform) {
 
         	if (width >= 480) {
+        		
+        		
         		//double maxAmp =0;
         		int upy = 300;
-        		
+        		maxAmp2 = new double[2];
         		for (int i = 0; i < toTransform[0].length; i++) {
                     int downy = (int) (upy - Math.abs(toTransform[0][i] * 5));
                     
@@ -223,12 +235,20 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     	maxAmp2[1] = i;
                     }
                     canvasDisplaySpectrum.drawLine(i, downy, i, upy, paintSpectrumDisplay);
+                    
+                    
                 }
         		//Log.i("maxAmp","maxAmp in freq. spec. : " + maxAmp+"\nNo. of frequency slots: " + toTransform[0].length);
-        		calcBaseFrequency(toTransform);    
-                imageViewDisplaySectrum.invalidate();
+        		
+        		calcBaseFrequency(toTransform);
+        		
+        		//Fade last amplitudes
+        		canvasDisplaySpectrum.drawPaint(fadePaint);
+        		
+        		imageViewDisplaySectrum.invalidate();
         	}
         	else if (width > 512){
+        		
         		for (int i = 0; i < toTransform[0].length; i++) {
                     int x = 2*i;
                     int downy = (int) (150 - (toTransform[0][i] * 10));
@@ -241,6 +261,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
         	
         	else{
+        		
         		for (int i = 0; i < toTransform[0].length; i++) {
         			int x = i;
                     int downy = (int) (150 - (toTransform[0][i] * 10));
@@ -250,6 +271,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     
                 imageViewDisplaySectrum.invalidate();
         	}
+        	
+        	//Log.i("log", "" + (int)(maxAmp2[1]*step))
                 
         }
         
@@ -292,7 +315,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        recordTask.execute();
 		        newSpectra = new double[blockSize];
                 maxAmp2 = new double[2];
-                freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
+                freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz\nPoints: ");
 	        }  
     	}
     	else if(v == genToneButton){
@@ -357,7 +380,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             canvasDisplaySpectrum = new Canvas(bitmapDisplaySpectrum);
             //canvasDisplaySpectrum = new Canvas(scaled);
             paintSpectrumDisplay = new Paint();
+            fadePaint = new Paint();
+            
             paintSpectrumDisplay.setColor(Color.YELLOW);
+            fadePaint.setColor(Color.argb(220, 255, 255, 255));//Adjust alpha(first position) to change how quickly the image fades
+            fadePaint.setXfermode(new PorterDuffXfermode(Mode.MULTIPLY));
+            
             imageViewDisplaySectrum.setImageBitmap(bitmapDisplaySpectrum);
            
             if ((width >= 480)){
@@ -543,13 +571,13 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                 
                 
         	}
+        	
         	@Override
             protected void onDraw(Canvas canvas)
             {
                 // TODO Auto-generated method stub
                 super.onDraw(canvas);
-                
-               // int x_Of_BimapScale = bitmapScale.
+  
                
                 if (width >= 480){
                   	 canvasScale.drawLine(0, 30, 0 + 480, 30, paintScaleDisplay);
@@ -568,6 +596,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                        	String text = Integer.toString(j) + "KHz";
                        	canvasScale.drawText(text, i, 45, paintScaleDisplay);
                        }
+                  	 
+                  	
+                  	 
                   	 canvas.drawBitmap(bitmapScale, 0, 0, paintScaleDisplay);
                   }
                 else if(width > 512){
@@ -663,8 +694,22 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			//Log.i("damn", "Highest after : " + baseFreq);
 			double step = (double) sampleRate / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
-			Log.i("freq", "amplitude : " + maxAmp2[1]);
-			freqText.setText("Base frequency = " + baseFreq*step + " Hz\nTop amplitude at: "+ maxAmp2[1]*step+" Hz");
+			//Log.i("freq", "amplitude : " + maxAmp2[1]);
+			//String bb = String.format("%.2f", maxAmp2[1]*step);
+			freqText.setText("Base frequency = " + baseFreq*step +
+					" Hz\nTop amplitude at: " + (int)(maxAmp2[1]*step) +" Hz\nPoints: " + nrOfPoints);
+			
+			
+			//Använder "Top Amplitude" och lägger till 1 poäng om man är +/-50Hz ifrån
+			if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+				
+				nrOfPoints++;
+			}
+			
+			
+			
+			
+			
 			return (double) baseFreq * step;
 	    
         }
@@ -684,7 +729,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                     newSpectra = new double[blockSize];
                     maxAmp2 = new double[2];
                     
-                    freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz");
+                    freqText.setText("Base frequency = 0 Hz\nTop amplitude at: 0 Hz\nPoints: ");
                 }
             };
 
