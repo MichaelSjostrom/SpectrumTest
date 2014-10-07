@@ -1,8 +1,14 @@
 package com.somitsolutions.android.spectrumanalyzer;
 
-import java.util.Random;
 
+import kankan.wheel.widget.adapters.ArrayWheelAdapter;
+import kankan.wheel.widget.adapters.NumericWheelAdapter;
+import kankan.wheel.widget.OnWheelChangedListener;
+import kankan.wheel.widget.OnWheelScrollListener;
+import kankan.wheel.widget.WheelView;
+import java.util.Random;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -10,7 +16,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-//import android.graphics.drawable.ShapeDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -29,10 +34,15 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import ca.uol.aig.fftpack.RealDoubleFFT;
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class SoundRecordAndAnalysisActivity extends Activity implements OnClickListener{
@@ -88,6 +98,18 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     private double freqOfTone; //HZ
 	
     private final byte generatedSnd[] = new byte[2 * numSamples];
+    
+    String wheelMenuFreq[];
+    
+    private WheelView freqWheel;
+    private final int freqWheelId = 1337;
+    
+    private boolean wheelScrolled = false;
+    
+    private TextView textView;
+    private EditText editText;
+    
+
 	//
     
     
@@ -97,23 +119,22 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Display display = getWindowManager().getDefaultDisplay();
-    	//Point size = new Point();
-    	//display.get(size);
+    	
     	width = display.getWidth();
     	height = display.getHeight();
-    	/*if (width > 512){
-    		blockSize = 512;
-    	}
-    	else{*/
-    		blockSize = 480;//256;//32768/2;//256;//32768;
-    		newSpectra = new double[blockSize];
+    	
+    	
+    	
+    	blockSize = 480;//256;//32768/2;//256;//32768;
+    	newSpectra = new double[blockSize];
     		//}  
-    		freqText = new FreqView(this);
-    		freqText.setTextColor(0xffff7700);
+    	freqText = new FreqView(this);
+    	freqText.setTextColor(0xffff7700);
     		
-    		generatedTone = new FreqView(this);
-    		generatedTone.setTextColor(0xffff7700);
+    	generatedTone = new FreqView(this);
+    	generatedTone.setTextColor(0xffff7700);
     }
+
  
     
     @Override
@@ -138,7 +159,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             audioRecord = new AudioRecord(
                     MediaRecorder.AudioSource.DEFAULT, sampleRate,
                     	channelConfiguration, audioEncoding, bufferSize);
-            Log.e("RecordingProgress", "Could probably not access the mic");
                     
             int bufferReadResult;
             short[] buffer = new short[blockSize];
@@ -190,11 +210,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         }
         
         protected void onProgressUpdate(double[]... toTransform) {
-        	//Log.e("RecordingProgress", "Displaying in progress");
-        	
-        	//double baseFrequency = calcBaseFrequency(toTransform);
-        	//Log.i("damn", "BaseFrequency = " + baseFrequency + " Hz\nSlots in frequency-spectra: " + toTransform[0].length);
-        	
+
         	if (width >= 480) {
         		//double maxAmp =0;
         		int upy = 300;
@@ -266,7 +282,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        recordTask.cancel(true);
 		        audioRecord.release();
 
-		        
 	        } 
 	        else {
 	        	Log.i("log", "started=false");
@@ -323,11 +338,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         0));
-        	main.addView(generatedTone,
-                    new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
+        	
         	
         	transformer = new RealDoubleFFT(blockSize);
             
@@ -421,9 +432,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	ll.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
         	ll.setOrientation(LinearLayout.HORIZONTAL);
             ll.addView(startStopButton);
-            //ll.addView(genToneButton);
-        	//ll.setLayoutParams(dividerDrawable(new ShapeDivider()));
-            //ll.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+
             ll.addView(resetBaseFreqBtn);
             main.addView(ll);
             
@@ -438,6 +447,36 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             ll2.addView(genToneButton);
                    
             main.addView(ll2);
+            
+            freqWheel = new WheelView(this);
+            freqWheel.setId(freqWheelId);
+            freqWheel.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
+            
+            NumericWheelAdapter freqAdapter = new NumericWheelAdapter(this, 100,2500); 
+            freqWheel.setViewAdapter(freqAdapter);
+            
+            
+            LinearLayout ll3 = new LinearLayout(this);
+            ll3.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            ll3.setOrientation(LinearLayout.HORIZONTAL);
+            ll3.addView(freqWheel);
+            
+            main.addView(ll3);
+            
+            /*
+            Dialog wheels = new Dialog(this);
+            
+            freqWheel = (WheelView) wheels.findViewById(R.id.w1);
+            
+            main.addView(freqWheel);
+            
+            */
+            
+            main.addView(generatedTone,
+                    new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        0));
             
             setContentView(main);
             //recordTask = new RecordAudio();
@@ -695,7 +734,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		
     		
     	}
+        
+
+        
 }
 
-//kommentarer 
     
