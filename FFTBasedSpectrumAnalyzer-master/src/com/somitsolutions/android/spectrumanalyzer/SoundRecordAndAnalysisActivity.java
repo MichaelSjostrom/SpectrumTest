@@ -488,9 +488,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             
             freqAdapter = new NumericWheelAdapter(this, 0,2500); 
             freqWheel.setViewAdapter(freqAdapter);
-            
-            
-            
+
             LinearLayout ll3 = new LinearLayout(this);
             ll3.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
             ll3.setOrientation(LinearLayout.HORIZONTAL);
