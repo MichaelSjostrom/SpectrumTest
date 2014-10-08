@@ -330,16 +330,16 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		genFreq();
     		genTone();
     		playSound();
-    		freqAdapter.setItemResource((int) freqOfTone - 100);
+    		freqAdapter.setItemResource((int) freqOfTone);
     		freqWheel.setCurrentItem(freqAdapter.getItemResource());
     		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
     	}
     	else if(v == genWheelTone){
-    		Log.i("freq", "nix");
     		freqOfTone = freqWheel.getCurrentItem();
-    		Log.i("freq", "jajjemen " + freqOfTone);
     		genTone();
     		playSound();
+    		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
+
     	}
      }
     
@@ -494,7 +494,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             freqWheel.setId(freqWheelId);
             freqWheel.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
             
-            freqAdapter = new NumericWheelAdapter(this, 100,2500); 
+            freqAdapter = new NumericWheelAdapter(this, 0,2500); 
             freqWheel.setViewAdapter(freqAdapter);
             
             
@@ -509,13 +509,13 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             genWheelTone = new Button(this);
             genWheelTone.setText("Generate tone");
             genWheelTone.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
-
+            genWheelTone.setOnClickListener(this);
+            
             LinearLayout ll4 = new LinearLayout(this);
             ll4.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
             ll4.setOrientation(LinearLayout.HORIZONTAL);
             ll4.addView(genWheelTone);
 
-            
             main.addView(ll4);
             
             /*
