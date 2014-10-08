@@ -16,12 +16,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-<<<<<<< HEAD
-=======
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
-//import android.graphics.drawable.ShapeDrawable;
->>>>>>> 088e7c05739c320fed9562aa7d4ca841b02419cf
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
