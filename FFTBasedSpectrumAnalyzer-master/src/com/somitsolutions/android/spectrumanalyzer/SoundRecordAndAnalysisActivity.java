@@ -118,6 +118,12 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     private TextView textView;
     private EditText editText;
     
+    double step;
+    
+    
+    
+    boolean getPoints = false;
+    
 
 	//
     
@@ -319,6 +325,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 	        }  
     	}
     	else if(v == genToneButton){
+    		
+    		getPoints = true;
     		genFreq();
     		genTone();
     		playSound();
@@ -663,6 +671,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
            
         }
         
+        
+        
         private double calcBaseFrequency(double[]... frequencySpectra){
 			
 			//double[] newSpectra = new double[frequencySpectra[0].length];
@@ -708,8 +718,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 					
 			}
 			
+			step = (double) sampleRate / (2 * blockSize);
 			//Log.i("damn", "Highest after : " + baseFreq);
-			double step = (double) sampleRate / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
+			 // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
 			//Log.i("freq", "amplitude : " + maxAmp2[1]);
 			//String bb = String.format("%.2f", maxAmp2[1]*step);
@@ -718,9 +729,16 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			
 			
 			//Använder "Top Amplitude" och lägger till 1 poäng om man är +/-50Hz ifrån
-			if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+			
+			
+			/*if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
 				
 				nrOfPoints++;
+				
+			}*/
+			
+			if(getPoints){
+				increasePoints();
 			}
 			
 			
@@ -798,6 +816,19 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		
     		
     	}
+        
+        private void increasePoints(){
+        	
+        	
+        	if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+				
+				nrOfPoints++;
+				
+				getPoints = false;
+				
+			}
+        	
+        }
       
 }
 
