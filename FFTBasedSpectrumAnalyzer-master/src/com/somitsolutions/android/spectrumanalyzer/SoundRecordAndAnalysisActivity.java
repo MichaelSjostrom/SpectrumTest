@@ -40,9 +40,13 @@ import ca.uol.aig.fftpack.RealDoubleFFT;
 public class SoundRecordAndAnalysisActivity extends Activity implements OnClickListener{
 
 	
-	int sampleRate = 2*8000;//16000;//8000;//44100;
+	int sampleRate = 16000; //16000;//8000;//44100;
     int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
+    float x = (float) (2 * Math.PI);
+    
+    short[] buffer2 = new short[15*4*2048];
+
     
     double maxFreq=0.0;
     double maxAmp2[] = new double[2];
@@ -76,7 +80,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     private final static int ID_BITMAPDISPLAYSPECTRUM = 1;
     private final static int ID_IMAGEVIEWSCALE = 2;
     
-    FreqView freqText =null;
+    FreqView freqText = null;
     double[] newSpectra;
     
 	//FÖR ATT GENERERA TONER MED VISSA FREKVENSER SAMT LITE LAYOUT - RICKARD
@@ -88,9 +92,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     
 	Button genToneButton;
 	private final int duration = 4;
-	private final int numSamples = duration * sampleRate;
+	private final int numSamples = duration * 44100;
 	
-	private final double sample[] = new double[numSamples];
+	private final double sample[] = new double[15*8*1024];
     private double freqOfTone; //HZ
 	
     private final byte generatedSnd[] = new byte[2 * numSamples];
@@ -173,9 +177,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             
 
             transformer.ft(toTransform);
-
-          
-
             
             publishProgress(toTransform);
             
@@ -302,7 +303,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     	else if(v == genToneButton){
     		genFreq();
     		genTone();
-    		playSound();
+    		//playSound();
     		
     		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
     	}
@@ -697,15 +698,15 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             }
         }
         
-        private void playSound(){
+       /* private void playSound(){
         	
-    		final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate,
+    		final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100,
     				AudioFormat.CHANNEL_OUT_MONO,
         			AudioFormat.ENCODING_PCM_16BIT, numSamples, AudioTrack.MODE_STATIC);
-    		audioTrack.write(generatedSnd, 0, generatedSnd.length);
+    		audioTrack.write(buffer2, 0, sample.length);
     		audioTrack.play();
         	
-        }
+        }*/
         
         private void genFreq(){
         	boolean Kalle = true;
@@ -719,20 +720,33 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         }
         
         private void genTone(){
-    		
-    		for(int i = 0; i < numSamples; i++){
-    			sample[i] = Math.sin(2 * Math.PI * i / (sampleRate/freqOfTone));
+        	
+        	        	
+    		for(int i = 0; i < 15*8*1024; i++){
+    			sample[i] = Math.sin(x * i / (44100/freqOfTone));
+    			buffer2[i] = (short) (sample[i] * Short.MAX_VALUE);
     		}
     		
-    		int idx = 0;
-    		for(final double dVal : sample){
+    	
+    		
+    		final AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100,
+    				AudioFormat.CHANNEL_OUT_MONO,
+        			AudioFormat.ENCODING_PCM_16BIT, (15*8*44100), AudioTrack.MODE_STATIC);
+    		
+    		audioTrack.write(buffer2, 0, buffer2.length);
+    		audioTrack.play();
+    		Log.i("BAJBAJS", "hhejj");
+    		
+    	
+    		//int idx = 0;
+    		/*for(final double dVal : sample){
     			
     			final short val = (short)((dVal * 32767));
     			
     			generatedSnd[idx++] = (byte) (val & 0x00ff);
     			generatedSnd[idx++] = (byte) ((val & 0xff0) >>> 8);
     			
-    		}
+    		}*/
     		
     		
     	}
