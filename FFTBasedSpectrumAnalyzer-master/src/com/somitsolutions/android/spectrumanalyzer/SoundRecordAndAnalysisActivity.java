@@ -1,8 +1,14 @@
 package com.somitsolutions.android.spectrumanalyzer;
 
-import java.util.Random;
 
+import kankan.wheel.widget.adapters.ArrayWheelAdapter;
+import kankan.wheel.widget.adapters.NumericWheelAdapter;
+import kankan.wheel.widget.OnWheelChangedListener;
+import kankan.wheel.widget.OnWheelScrollListener;
+import kankan.wheel.widget.WheelView;
+import java.util.Random;
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -12,7 +18,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff.Mode;
 import android.graphics.PorterDuffXfermode;
-//import android.graphics.drawable.ShapeDrawable;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioRecord;
@@ -31,10 +36,15 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import ca.uol.aig.fftpack.RealDoubleFFT;
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class SoundRecordAndAnalysisActivity extends Activity implements OnClickListener{
@@ -91,6 +101,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     int nrOfPoints = 0;
     
 	Button genToneButton;
+	Button genWheelTone;
 	private final int duration = 4;
 	private final int numSamples = duration * 44100;
 	
@@ -98,6 +109,26 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     private double freqOfTone; //HZ
 	
     private final byte generatedSnd[] = new byte[2 * numSamples];
+    
+    String wheelMenuFreq[];
+    
+    NumericWheelAdapter freqAdapter;
+    
+    private WheelView freqWheel;
+    private final int freqWheelId = 1337;
+    
+    private boolean wheelScrolled = false;
+    
+    private TextView textView;
+    private EditText editText;
+    
+    double step;
+    
+    
+    
+    boolean getPoints = false;
+    
+
 	//
     
     
@@ -107,23 +138,23 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Display display = getWindowManager().getDefaultDisplay();
-    	//Point size = new Point();
-    	//display.get(size);
+    	
     	width = display.getWidth();
     	height = display.getHeight();
-    	/*if (width > 512){
-    		blockSize = 512;
-    	}
-    	else{*/
-    		blockSize = 480;//256;//32768/2;//256;//32768;
-    		newSpectra = new double[blockSize];
+    	
+    	Log.i("freq", "booog2323");
+    	
+    	
+    	blockSize = 480;//256;//32768/2;//256;//32768;
+    	newSpectra = new double[blockSize];
     		//}  
-    		freqText = new FreqView(this);
-    		freqText.setTextColor(0xffff7700);
+    	freqText = new FreqView(this);
+    	freqText.setTextColor(0xffff7700);
     		
-    		generatedTone = new FreqView(this);
-    		generatedTone.setTextColor(0xffff7700);
+    	generatedTone = new FreqView(this);
+    	generatedTone.setTextColor(0xffff7700);
     }
+
  
     
     @Override
@@ -148,7 +179,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             audioRecord = new AudioRecord(
                     MediaRecorder.AudioSource.DEFAULT, sampleRate,
                     	channelConfiguration, audioEncoding, bufferSize);
-            Log.e("RecordingProgress", "Could probably not access the mic");
                     
             int bufferReadResult;
             short[] buffer = new short[blockSize];
@@ -197,11 +227,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         }
         
         protected void onProgressUpdate(double[]... toTransform) {
-        	//Log.e("RecordingProgress", "Displaying in progress");
-        	
-        	//double baseFrequency = calcBaseFrequency(toTransform);
-        	//Log.i("damn", "BaseFrequency = " + baseFrequency + " Hz\nSlots in frequency-spectra: " + toTransform[0].length);
-        	
+
         	if (width >= 480) {
         		
         		
@@ -286,7 +312,6 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 		        recordTask.cancel(true);
 		        audioRecord.release();
 
-		        
 	        } 
 	        else {
 	        	Log.i("log", "started=false");
@@ -301,16 +326,29 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 	        }  
     	}
     	else if(v == genToneButton){
+    		
+    		getPoints = true;
     		genFreq();
     		genTone();
+
     		//playSound();
     		
+
+    		//playSound();
+    		freqAdapter.setItemResource((int) freqOfTone);
+    		freqWheel.setCurrentItem(freqAdapter.getItemResource());
+
     		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
+    	}
+    	else if(v == genWheelTone){
+    		freqOfTone = freqWheel.getCurrentItem();
+    		genTone();
+    		//playSound();
+    		generatedTone.setText("Generated tone: " + freqOfTone + " Hz");
+
     	}
      }
     
-    
-        
         static SoundRecordAndAnalysisActivity getMainActivity(){
         	return mainActivity;
         }
@@ -343,11 +381,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT,
                         0));
-        	main.addView(generatedTone,
-                    new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        0));
+        	
         	
         	transformer = new RealDoubleFFT(blockSize);
             
@@ -446,9 +480,7 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         	ll.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
         	ll.setOrientation(LinearLayout.HORIZONTAL);
             ll.addView(startStopButton);
-            //ll.addView(genToneButton);
-        	//ll.setLayoutParams(dividerDrawable(new ShapeDivider()));
-            //ll.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+
             ll.addView(resetBaseFreqBtn);
             main.addView(ll);
             
@@ -463,6 +495,47 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
             ll2.addView(genToneButton);
                    
             main.addView(ll2);
+            
+            freqWheel = new WheelView(this);
+            freqWheel.setId(freqWheelId);
+            freqWheel.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
+            
+            freqAdapter = new NumericWheelAdapter(this, 0,2500); 
+            freqWheel.setViewAdapter(freqAdapter);
+
+            LinearLayout ll3 = new LinearLayout(this);
+            ll3.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            ll3.setOrientation(LinearLayout.HORIZONTAL);
+            ll3.addView(freqWheel);
+            
+            main.addView(ll3);
+            
+            genWheelTone = new Button(this);
+            genWheelTone.setText("Generate tone");
+            genWheelTone.setLayoutParams(new LinearLayout.LayoutParams(width/2,LinearLayout.LayoutParams.WRAP_CONTENT));
+            genWheelTone.setOnClickListener(this);
+            
+            LinearLayout ll4 = new LinearLayout(this);
+            ll4.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,android.view.ViewGroup.LayoutParams.WRAP_CONTENT));
+            ll4.setOrientation(LinearLayout.HORIZONTAL);
+            ll4.addView(genWheelTone);
+
+            main.addView(ll4);
+            
+            /*
+            Dialog wheels = new Dialog(this);
+            
+            freqWheel = (WheelView) wheels.findViewById(R.id.w1);
+            
+            main.addView(freqWheel);
+            
+            */
+            
+            main.addView(generatedTone,
+                    new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        0));
             
             setContentView(main);
             //recordTask = new RecordAudio();
@@ -604,6 +677,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
            
         }
         
+        
+        
         private double calcBaseFrequency(double[]... frequencySpectra){
 			
 			//double[] newSpectra = new double[frequencySpectra[0].length];
@@ -649,8 +724,9 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 					
 			}
 			
+			step = (double) sampleRate / (2 * blockSize);
 			//Log.i("damn", "Highest after : " + baseFreq);
-			double step = (double) sampleRate / (2 * blockSize); // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
+			 // if 8000/(2*256) = 15.625, if 44100/(2*32768) = 0.67
 			//Log.i("damn", "Basnot-frekvens: " + /*baseFreq */ baseFreq*step+"\nBlockSize-newSpectra.length = " + (blockSize-newSpectra.length));
 			//Log.i("freq", "amplitude : " + maxAmp2[1]);
 			//String bb = String.format("%.2f", maxAmp2[1]*step);
@@ -659,9 +735,16 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
 			
 			
 			//Använder "Top Amplitude" och lägger till 1 poäng om man är +/-50Hz ifrån
-			if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+			
+			
+			/*if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
 				
 				nrOfPoints++;
+				
+			}*/
+			
+			if(getPoints){
+				increasePoints();
 			}
 			
 			
@@ -718,6 +801,8 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
         		}
         	}        	
         }
+
+        
         
         private void genTone(){
         	
@@ -750,7 +835,21 @@ public class SoundRecordAndAnalysisActivity extends Activity implements OnClickL
     		
     		
     	}
+        
+        private void increasePoints(){
+        	
+        	
+        	if(((maxAmp2[1]*step+50)>=freqOfTone) && ((maxAmp2[1]*step-50)<=freqOfTone)){
+				
+				nrOfPoints++;
+				
+				getPoints = false;
+				
+			}
+        	
+        }
+      
 }
 
-//kommentarer 
+
     
